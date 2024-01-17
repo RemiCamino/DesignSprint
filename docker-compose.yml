@@ -2,7 +2,7 @@ version: '3.8'
 services:
   vuejs-frontend:
     build:
-      context: ./playlistcreator
+      context: ./front
       dockerfile: Dockerfile
     ports:
       - "80:80"
