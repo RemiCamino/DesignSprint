@@ -1,0 +1,22 @@
+version: '3.8'
+services:
+  vuejs-frontend:
+    build:
+      context: ./playlistcreator
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    networks:
+      - webnet
+
+  fastapi-backend:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    networks:
+      - webnet
+
+networks:
+  webnet:
