@@ -21,9 +21,10 @@
 
 <script>
 import ValidatePage from './ValidatePage.vue'
+import axios from 'axios';
 
 export default {
-  name: 'MusicManager',
+  name: 'PlaylistCreator',
   components: {
     ValidatePage
   },
@@ -47,10 +48,25 @@ export default {
       }
     },
     createPlaylist() {
-      if (this.playlistName.trim()) {
-        this.$emit('playlist-created'); // Emit an event when a playlist is created
+  if (this.playlistName.trim() && (this.selectedGenre || this.customGenre)) {
+    axios.post('http://localhost:5000/create_playlist', {
+      genre: this.selectedGenre || this.customGenre,
+      playlist_name: this.playlistName
+    }, {
+      headers: {
+        'Content-Type': 'application/json'
       }
+    })
+    .then(response => {
+      console.log(response.data);
+      this.$emit('playlist-created');
+    })
+    .catch(error => {
+      console.error('Error creating playlist:', error);
+    });
   }
+}
+
 }
 }
 </script>

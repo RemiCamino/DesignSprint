@@ -1,3 +1,5 @@
 spotipy
 uvicorn
 fastapi
+fastapi-cors
+pydantic
