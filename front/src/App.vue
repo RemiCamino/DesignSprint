@@ -14,6 +14,7 @@
 import LoginButton from './components/LoginButton.vue';
 import PlaylistCreator from './components/PlaylistCreator.vue';
 import ValidatePage from './components/ValidatePage.vue';
+
 export default {
   name: 'App',
   components: {
@@ -28,9 +29,14 @@ export default {
       playlistCreated: false
     };
   },
+  created() {
+    const token = localStorage.getItem('spotify_access_token');
+    this.isLoggedIn = !!token;
+  },
+
   methods: {
     handleLogin() {
-      this.isLoggedIn = true;
+      this.isLoggedIn = false;
     },
     genreSelected(genre) {
       this.selectedGenre = genre;

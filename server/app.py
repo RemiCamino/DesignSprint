@@ -2,7 +2,9 @@ from fastapi import FastAPI, HTTPException, Query
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import RedirectResponse
 from pydantic import BaseModel
+from typing import Optional
 import random
 
 app = FastAPI()
@@ -35,25 +37,17 @@ auth_manager = SpotifyOAuth(
 sp = spotipy.Spotify(auth_manager=auth_manager)
 
 class CreatePlaylistRequest(BaseModel):
-    genre: str
-    playlist_name: str
+    playlist_name: Optional[str] = "SHUFFLEMAX"
 
 @app.post("/create_playlist")
 def create_playlist(request: CreatePlaylistRequest):
-    genre = request.genre
     playlist_name = request.playlist_name
     try:
         top_tracks = sp.current_user_top_tracks(time_range='long_term', limit=25)
         top_tracks_ids = [track['id'] for track in top_tracks['items']]
 
-        filtered_tracks_ids = []
-        for track_id in top_tracks_ids:
-            track_features = sp.audio_features(track_id)[0]
-            if track_features and track_features['genre'] == genre:
-                filtered_tracks_ids.append(track_id)
-
         recommended_tracks = []
-        for track_id in filtered_tracks_ids:
+        for track_id in top_tracks_ids:
             try:
                 recommendations = sp.recommendations(seed_tracks=[track_id], limit=1)
                 recommended_track = recommendations['tracks'][0]
@@ -61,25 +55,45 @@ def create_playlist(request: CreatePlaylistRequest):
             except spotipy.exceptions.SpotifyException as e:
                 print(f"Error getting recommendations for {track_id}: {e}")
 
-        all_track_ids = filtered_tracks_ids + recommended_tracks
+        all_track_ids = top_tracks_ids + recommended_tracks
         random.shuffle(all_track_ids)
 
         user_id = sp.me()['id']
         playlist = sp.user_playlist_create(user=user_id, name=playlist_name, public=False)
-
         sp.playlist_add_items(playlist_id=playlist['id'], items=all_track_ids)
 
         return {"message": "Playlist created successfully", "playlist_id": playlist['id']}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+import json
+
 @app.get("/callback")
 def handle_callback(code: str = Query(...)):
     try:
         token_info = auth_manager.get_access_token(code)
-        return {"message": "Authentication successful", "token_info": token_info}
+        with open('token_info.json', 'w') as file:
+            json.dump(token_info, file)
+        return RedirectResponse(url='http://localhost:8080/?loggedIn=true')
     except spotipy.oauth2.SpotifyOauthError as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+@app.get("/get_token")
+def get_token():
+    try:
+        with open('token_info.json', 'r') as file:
+            token_info = json.load(file)
+        return token_info
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail="Token not found")
+
+@app.get("/get_user_profile")
+def get_user_profile():
+    try:
+        user_profile = sp.current_user()
+        return user_profile
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 if __name__ == "__main__":

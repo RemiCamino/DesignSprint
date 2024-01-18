@@ -1,16 +1,12 @@
 <template>
-  <div>
-    <div class="navbar">SPOTIFY PLAYLIST CREATOR</div>
-    
-    <div class="genre-buttons" v-if="showPlaylistCreator">
-      <button class="genre-button" v-for="genre in genres" :key="genre" @click="selectGenre(genre)">
-        {{ genre }}
-      </button>
-      <input class="genre-input" type="text" v-model="customGenre" placeholder="Add new genre..." @keyup.enter="addCustomGenre">
+<div>
+    <div class="navbar">
+      Bienvenue sur SHUFFLEMAX, {{ userName }}
+      <button class="logout-btn" v-if="isLoggedIn" @click="logout">Logout</button>
     </div>
     
-    <div class="playlist-creator" v-if="showPlaylistCreator && (selectedGenre || customGenre)">
-      <h3>Create a Playlist for {{ selectedGenre || customGenre }}</h3>
+    <div class="playlist-creator" v-if="showPlaylistCreator">
+      <h3>Create a Playlist</h3>
       <input type="text" v-model="playlistName" placeholder="Enter playlist name..." class="playlist-input">
       <button @click="createPlaylist" class="create-playlist-button">Create Playlist</button>
     </div>
@@ -30,47 +26,34 @@ export default {
   },
   data() {
     return {
-      genres: ['Hip-Hop', 'Rock', 'Rap', 'Techno', 'Pop'],
-      selectedGenre: null,
-      customGenre: '',
       playlistName: '',
-      showPlaylistCreator: true
+      showPlaylistCreator: true,
+      username: '', 
     }
   },
   methods: {
-    selectGenre(genre) {
-      this.selectedGenre = genre;
-      this.customGenre = '';
-    },
-    addCustomGenre() {
-      if (this.customGenre.trim()) {
-        this.selectedGenre = this.customGenre;
-      }
-    },
     createPlaylist() {
-  if (this.playlistName.trim() && (this.selectedGenre || this.customGenre)) {
-    axios.post('http://localhost:5000/create_playlist', {
-      genre: this.selectedGenre || this.customGenre,
-      playlist_name: this.playlistName
-    }, {
-      headers: {
-        'Content-Type': 'application/json'
+      if (this.playlistName.trim()) {
+        axios.post('http://localhost:5000/create_playlist', {
+          playlist_name: this.playlistName
+        }, {
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        })
+        .then(response => {
+          console.log(response.data);
+          this.$emit('playlist-created');
+        })
+        .catch(error => {
+          console.error('Error creating playlist:', error);
+        });
       }
-    })
-    .then(response => {
-      console.log(response.data);
-      this.$emit('playlist-created');
-    })
-    .catch(error => {
-      console.error('Error creating playlist:', error);
-    });
+    }
   }
 }
-
-}
-}
 </script>
-  <style>
+<style>
 .navbar {
   background-color: #000;
   color: #fff;
@@ -156,5 +139,19 @@ export default {
   font-family: Arial, sans-serif;
 }
 
+.logout-btn {
+  background-color: red;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  padding: 10px 20px;
+  cursor: pointer;
+  float: right;
+  margin-right: 20px;
+}
+
+.logout-btn:hover {
+  background-color: darkred;
+}
   </style>
   
