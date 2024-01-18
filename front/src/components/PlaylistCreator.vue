@@ -71,13 +71,18 @@ export default {
 }
 </script>
   <style>
-  .navbar {
-    background-color: #000;
-    color: #fff;
-    padding: 10px 0;
-    font-size: 1.5em;
-    text-align: center;
-  }
+.navbar {
+  background-color: #000;
+  color: #fff;
+  padding: 15px 0;
+  font-size: 2em;
+  text-align: center;
+  font-family: 'Helvetica Neue', sans-serif; 
+  letter-spacing: 1px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  margin-bottom: 20px;
+  margin-left: 10px;
+}
   
   .genre-buttons {
     margin: 20px;
@@ -150,5 +155,6 @@ export default {
   color: white;
   font-family: Arial, sans-serif;
 }
+
   </style>
   

@@ -1,9 +1,7 @@
 <template>
   <div class="validate-container">
     <div class="navbar">SPOTIFY PLAYLIST CREATOR</div>
-    <div class="validate-message">
-      Votre Playlist a été créée !
-    </div>
+
     <button @click="goBack" class="return-button">Retour</button>
   </div>
 </template>
@@ -13,7 +11,7 @@ export default {
   name: 'ValidatePage',
   methods: {
     goBack() {
-      this.$emit('return-to-creator'); // Emit an event instead of routing
+      this.$emit('return-to-creator');
     }
   }
 }
