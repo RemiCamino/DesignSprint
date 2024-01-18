@@ -1,23 +1,26 @@
 <template>
-    <div>
-      <div class="navbar">SPOTIFY PLAYLIST CREATOR</div>
-      <div class="login-card centered">
-        <input type="text" class="input-field" placeholder="Username" />
-        <input type="password" class="input-field" placeholder="Password" />
-        <button class="login-btn" @click="login">Se Connecter</button>
-      </div>
+  <div>
+    <div class="navbar">SPOTIFY PLAYLIST CREATOR</div>
+    <div class="login-card centered">
+      <button class="login-btn" @click="login">Login with Spotify</button>
     </div>
-  </template>
-  
-  <script>
-  export default {
-    name: 'LoginButton',
-    methods: {
-      login() {
-        // Since we're simulating the login, we just emit the login-success event.
-        this.$emit('login-success');
-      }
+  </div>
+</template>
+
+<script>
+export default {
+  name: 'LoginButton',
+  methods: {
+    login() {
+      const client_id = '88d09a98f3a342d099d4ee707ded9d89';
+      const redirect_uri = encodeURIComponent('http://localhost:5000/callback');
+      const scope = encodeURIComponent('user-top-read playlist-modify-private');
+      const responseType = 'code';
+
+      const authUrl = `https://accounts.spotify.com/authorize?client_id=${client_id}&redirect_uri=${redirect_uri}&scope=${scope}&response_type=${responseType}`;
+
+      window.location.href = authUrl;
     }
   }
-  </script>
-  
+}
+</script>

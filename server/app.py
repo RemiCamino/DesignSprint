@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 from fastapi.middleware.cors import CORSMiddleware
@@ -20,12 +20,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-client_id = 'd72df51fb9c24183a83bb23a4663925c'
-client_secret = 'a2f4aed62807411893b7c2e4c8425350'
+client_id = '88d09a98f3a342d099d4ee707ded9d89'
+client_secret = '60daea895d7d4435a6f51c4ee664ff1c'
 redirect_uri = 'http://localhost:5000/callback'
 scope = 'user-top-read playlist-modify-private'
 
-auth_manager = SpotifyOAuth(client_id=client_id, client_secret=client_secret, redirect_uri=redirect_uri, scope=scope)
+auth_manager = SpotifyOAuth(
+    client_id=client_id, 
+    client_secret=client_secret, 
+    redirect_uri=redirect_uri, 
+    scope=scope
+)
+
 sp = spotipy.Spotify(auth_manager=auth_manager)
 
 class CreatePlaylistRequest(BaseModel):
@@ -66,6 +72,15 @@ def create_playlist(request: CreatePlaylistRequest):
         return {"message": "Playlist created successfully", "playlist_id": playlist['id']}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/callback")
+def handle_callback(code: str = Query(...)):
+    try:
+        token_info = auth_manager.get_access_token(code)
+        return {"message": "Authentication successful", "token_info": token_info}
+    except spotipy.oauth2.SpotifyOauthError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
 
 if __name__ == "__main__":
     import uvicorn
