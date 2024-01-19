@@ -2,8 +2,8 @@
   <div id="app">
     <transition name="zoom" mode="out-in">
       <div key="transition-wrapper">
-        <LoginButton @login-success="handleLogin" key="login-button" />
-        <PlaylistCreator v-if="isLoggedIn && !playlistCreated" @playlist-created="handlePlaylistCreated" key="playlist-creator" />
+        <LoginButton v-if="!isLoggedIn" @login-success="handleLogin" key="login-button" />
+        <PlaylistCreator v-else-if="isLoggedIn && !playlistCreated" @genre-selected="genreSelected" @playlist-created="handlePlaylistCreated" key="genre-selector" />
         <ValidatePage v-if="playlistCreated" @return-to-creator="resetView" key="validate-page" />
       </div>
     </transition>
@@ -14,7 +14,6 @@
 import LoginButton from './components/LoginButton.vue';
 import PlaylistCreator from './components/PlaylistCreator.vue';
 import ValidatePage from './components/ValidatePage.vue';
-
 export default {
   name: 'App',
   components: {
@@ -29,15 +28,6 @@ export default {
       playlistCreated: false
     };
   },
-  created() {
-  const urlParams = new URLSearchParams(window.location.search);
-  console.log("URL Params:", urlParams.get('loggedIn')); // Pour déboguer
-  if (urlParams.get('loggedIn') === 'true') {
-    this.isLoggedIn = true;
-  }
-},
-
-
   methods: {
     handleLogin() {
       this.isLoggedIn = true;

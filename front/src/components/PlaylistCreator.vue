@@ -1,99 +1,67 @@
 <template>
   <div>
-    <div class="navbar">
-      Bienvenue sur SHUFFLEMAX, {{ username }}
-      <button class="logout-btn" @click="logout">Logout</button>
+    <div class="navbar">SHUFFLE</div>
+    
+    <div class="genre-buttons" v-if="showPlaylistCreator && !showValidatePage">
+      <button class="genre-button" v-for="genre in genres" :key="genre" @click="selectGenre(genre)">
+        {{ genre }}
+      </button>
+      <input class="genre-input" type="text" v-model="customGenre" placeholder="Add new genre..." @keyup.enter="addCustomGenre">
     </div>
     
-    <div class="playlist-creator">
-      <h3>Create a Playlist</h3>
+    <div class="playlist-creator" v-if="showPlaylistCreator && (selectedGenre || customGenre) && !showValidatePage">
+      <h3>Create a Playlist for {{ selectedGenre || customGenre }}</h3>
       <input type="text" v-model="playlistName" placeholder="Enter playlist name..." class="playlist-input">
       <button @click="createPlaylist" class="create-playlist-button">Create Playlist</button>
     </div>
 
-    <ValidatePage v-if="playlistCreated" @return-to-creator="resetView" />
+    <ValidatePage v-if="showValidatePage" @return-to-creator="showPlaylistCreator = true; showValidatePage = false" />
   </div>
 </template>
 
 <script>
-import ValidatePage from './ValidatePage.vue';
-import axios from 'axios';
+import ValidatePage from './ValidatePage.vue'
 
 export default {
-  name: 'PlaylistCreator',
+  name: 'MusicManager',
   components: {
     ValidatePage
   },
   data() {
     return {
+      genres: ['Hip-Hop', 'Rock', 'Rap', 'Techno', 'Pop'],
+      selectedGenre: null,
+      customGenre: '',
       playlistName: '',
-      playlistCreated: false,
-      username: '',
-    };
-  },
-  created() {
-    this.fetchUserProfile();
+      showPlaylistCreator: true
+    }
   },
   methods: {
-    fetchUserProfile() {
-      const token = localStorage.getItem('spotify_access_token');
-      if (token) {
-        axios.get('http://localhost:5000/get_user_profile', {
-          headers: { Authorization: `Bearer ${token}` }
-        })
-        .then(response => {
-          this.username = response.data.display_name;
-        })
-        .catch(error => {
-          console.error('Error fetching user profile:', error);
-        });
+    selectGenre(genre) {
+      this.selectedGenre = genre;
+      this.customGenre = '';
+    },
+    addCustomGenre() {
+      if (this.customGenre.trim()) {
+        this.selectedGenre = this.customGenre;
       }
     },
     createPlaylist() {
-      const token = localStorage.getItem('spotify_access_token');
-      if (this.playlistName.trim() && token) {
-        axios.post('http://localhost:5000/create_playlist', {
-          playlist_name: this.playlistName
-        }, {
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          }
-        })
-        .then(response => {
-          console.log(response.data);
-          this.playlistCreated = true;
-        })
-        .catch(error => {
-          console.error('Error creating playlist:', error);
-        });
+      if (this.playlistName.trim()) {
+        this.$emit('playlist-created');
       }
-    },
-    resetView() {
-      this.playlistCreated = false;
-      this.playlistName = '';
-    },
-    logout() {
-      localStorage.removeItem('spotify_access_token');
-      location.reload();
-    }
   }
 }
-</script>
-
-<style>
-.navbar {
-  background-color: #000;
-  color: #fff;
-  padding: 15px 0;
-  font-size: 2em;
-  text-align: center;
-  font-family: 'Helvetica Neue', sans-serif; 
-  letter-spacing: 1px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  margin-bottom: 20px;
-  margin-left: 10px;
 }
+</script>
+  <style>
+  .navbar {
+    background-color: #000;
+    color: #fff;
+    padding: 10px 0;
+    font-size: 1.5em;
+    text-align: center;
+  }
   
   .genre-buttons {
     margin: 20px;
@@ -165,21 +133,6 @@ export default {
 .created-playlist-message {
   color: white;
   font-family: Arial, sans-serif;
-}
-
-.logout-btn {
-  background-color: red;
-  color: white;
-  border: none;
-  border-radius: 20px;
-  padding: 10px 20px;
-  cursor: pointer;
-  float: right;
-  margin-right: 20px;
-}
-
-.logout-btn:hover {
-  background-color: darkred;
 }
   </style>
   
