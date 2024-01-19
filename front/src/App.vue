@@ -2,8 +2,8 @@
   <div id="app">
     <transition name="zoom" mode="out-in">
       <div key="transition-wrapper">
-        <LoginButton v-if="!isLoggedIn" @login-success="handleLogin" key="login-button" />
-        <PlaylistCreator v-else-if="isLoggedIn && !playlistCreated" @genre-selected="genreSelected" @playlist-created="handlePlaylistCreated" key="genre-selector" />
+        <LoginButton @login-success="handleLogin" key="login-button" />
+        <PlaylistCreator v-if="isLoggedIn && !playlistCreated" @playlist-created="handlePlaylistCreated" key="playlist-creator" />
         <ValidatePage v-if="playlistCreated" @return-to-creator="resetView" key="validate-page" />
       </div>
     </transition>
@@ -30,13 +30,17 @@ export default {
     };
   },
   created() {
-    const token = localStorage.getItem('spotify_access_token');
-    this.isLoggedIn = !!token;
-  },
+  const urlParams = new URLSearchParams(window.location.search);
+  console.log("URL Params:", urlParams.get('loggedIn')); // Pour déboguer
+  if (urlParams.get('loggedIn') === 'true') {
+    this.isLoggedIn = true;
+  }
+},
+
 
   methods: {
     handleLogin() {
-      this.isLoggedIn = false;
+      this.isLoggedIn = true;
     },
     genreSelected(genre) {
       this.selectedGenre = genre;

@@ -72,9 +72,7 @@ import json
 def handle_callback(code: str = Query(...)):
     try:
         token_info = auth_manager.get_access_token(code)
-        with open('token_info.json', 'w') as file:
-            json.dump(token_info, file)
-        return RedirectResponse(url='http://localhost:8080/?loggedIn=true')
+        return {"message": "Authentication successful", "token_info": token_info}
     except spotipy.oauth2.SpotifyOauthError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -94,6 +92,8 @@ def get_user_profile():
         return user_profile
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
 
 
 if __name__ == "__main__":

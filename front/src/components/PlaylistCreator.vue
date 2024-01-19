@@ -1,22 +1,22 @@
 <template>
-<div>
+  <div>
     <div class="navbar">
-      Bienvenue sur SHUFFLEMAX, {{ userName }}
-      <button class="logout-btn" v-if="isLoggedIn" @click="logout">Logout</button>
+      Bienvenue sur SHUFFLEMAX, {{ username }}
+      <button class="logout-btn" @click="logout">Logout</button>
     </div>
     
-    <div class="playlist-creator" v-if="showPlaylistCreator">
+    <div class="playlist-creator">
       <h3>Create a Playlist</h3>
       <input type="text" v-model="playlistName" placeholder="Enter playlist name..." class="playlist-input">
       <button @click="createPlaylist" class="create-playlist-button">Create Playlist</button>
     </div>
 
-    <ValidatePage v-else @return-to-creator="showPlaylistCreator = true" />
+    <ValidatePage v-if="playlistCreated" @return-to-creator="resetView" />
   </div>
 </template>
 
 <script>
-import ValidatePage from './ValidatePage.vue'
+import ValidatePage from './ValidatePage.vue';
 import axios from 'axios';
 
 export default {
@@ -27,32 +27,60 @@ export default {
   data() {
     return {
       playlistName: '',
-      showPlaylistCreator: true,
-      username: '', 
-    }
+      playlistCreated: false,
+      username: '',
+    };
+  },
+  created() {
+    this.fetchUserProfile();
   },
   methods: {
+    fetchUserProfile() {
+      const token = localStorage.getItem('spotify_access_token');
+      if (token) {
+        axios.get('http://localhost:5000/get_user_profile', {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+        .then(response => {
+          this.username = response.data.display_name;
+        })
+        .catch(error => {
+          console.error('Error fetching user profile:', error);
+        });
+      }
+    },
     createPlaylist() {
-      if (this.playlistName.trim()) {
+      const token = localStorage.getItem('spotify_access_token');
+      if (this.playlistName.trim() && token) {
         axios.post('http://localhost:5000/create_playlist', {
           playlist_name: this.playlistName
         }, {
           headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
           }
         })
         .then(response => {
           console.log(response.data);
-          this.$emit('playlist-created');
+          this.playlistCreated = true;
         })
         .catch(error => {
           console.error('Error creating playlist:', error);
         });
       }
+    },
+    resetView() {
+      this.playlistCreated = false;
+      this.playlistName = '';
+    },
+    logout() {
+      localStorage.removeItem('spotify_access_token');
+      location.reload();
     }
   }
 }
 </script>
+
 <style>
 .navbar {
   background-color: #000;
